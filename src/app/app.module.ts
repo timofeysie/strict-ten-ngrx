@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './reducers';
+import { MoviesModule } from './movies/movies.module';
 
 @NgModule({
   declarations: [
@@ -13,6 +14,7 @@ import { reducers, metaReducers } from './reducers';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    MoviesModule,
     StoreModule.forRoot(reducers, {
       metaReducers
     })
