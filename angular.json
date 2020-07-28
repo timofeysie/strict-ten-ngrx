@@ -126,6 +126,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "my-strict-ten"
+    }
+  },
+  "defaultProject": "my-strict-ten",
+  "cli": {
+    "analytics": false
+  }
 }
