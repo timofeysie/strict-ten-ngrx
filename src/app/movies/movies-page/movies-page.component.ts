@@ -17,7 +17,6 @@ export class MoviesPageComponent implements OnInit {
 
   ngOnInit(): void {
     // this.movieService.getAll().subscribe((movies) => (this.movies = movies));
-    console.log('hi there')
     this.store.dispatch({ type: '[Movies Page] Load Movies' });
   }
 }
