@@ -16,7 +16,9 @@ The strict flag does the following:
 * Turns on no-any tslint rule to prevent declarations of type any
 * Marks your application as side-effect free to enable more advanced tree-shaking
 
-The functionality is an implementation of the example code shown in the [official guide to Ngrx effects](https://ngrx.io/guide/effects).
+The functionality is an implementation of the example code shown in the [official guide to Ngrx effects](https://ngrx.io/guide/effects).  This project is a work in progress to see if it's possible on the docs alone to make that code run.  There doesn't seem to be a lot of articles that cover this, aside from say [Pluralsight courses](https://app.pluralsight.com/library/courses/rxjs-angular-reactive-development/table-of-contents) that go through it all for a price.
+
+Lets see how it goes.
 
 ## Registering effects
 
@@ -33,8 +35,7 @@ MovieEffects,
   },
 ```
 
-1. Registering root effects
-After you've written your Effects class, you must register it so the effects start running. To register root-level effects, add the EffectsModule.forRoot() method with an array of your effects to your AppModule.
+1. Registering root effects by adding the EffectsModule.forRoot() method with an array of your effects to your AppModule.
 
 2. For feature modules, register your effects by adding the EffectsModule.forFeature() method in the imports array of your NgModule.
 
@@ -89,6 +90,177 @@ on(loadMoviesSuccess, (state, action) => ({
 ```
 
 I can see the state in the dev tools with the array of movies there, but the template is blank.  It seems like there is a problem with the asyc pipe.  But since all the code is coming from the official docs, I'm not sure what's going on.
+
+We have our actions, effects and reducers, we have registered all that twice, so the only other piece we haven't looked at is a selector.  Worth a shot.  Currently, we have this:
+
+```js
+movies$: Observable<Movie[]> = this.store.select((state) => state.movies);
+```
+
+Looks OK without really knowing what's wrong.  The state is there and we can see the movies attached to it in the dev tools.
+
+Selectors are pure functions used for obtaining slices of store state.  The [docs page for selectors](https://ngrx.io/guide/store/selectors) is a big one.  They are all shown in index.ts files, but I think we should create a specific file for them.
+
+The first example shows two states:
+
+```js
+export interface FeatureState {
+  counter: number;
+}
+export interface AppState {
+  feature: FeatureState;
+}
+```
+
+This is starting to look familiar.  We have an app state called State and a MovieState.
+
+This seems like the way to go:
+
+```js
+export const selectMovies = (state: State) => state.movies;
+export const selectFeatureMovies = createSelector(
+  selectMovies,
+  (state: MovieState) => state.movies
+);
+```
+
+Next we have to use the selector with props.  There is actually only one example of doing this on the page, but there is no implementation of the selector they are using which uses dot notation.
+
+Trying this:
+
+```js
+movies$: Observable<Movie[]> = this.store.select(selectFeatureMovies);
+```
+
+Causes this fearsome TS error under the selector:
+
+```txt
+No overload matches this call.
+  Overload 1 of 9, '(mapFn: (state: { movies: Movie[]; }) => Movie[]): Observable<Movie[]>', gave the following error.
+    Argument of type 'MemoizedSelector<State, Movie[], DefaultProjectorFn<Movie[]>>' is not assignable to parameter of type '(state: { movies: Movie[]; }) => Movie[]'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ movies: Movie[]; }' is not assignable to type 'State'.
+```
+
+Maybe this will work:
+
+```js
+export const MOVIES_FEATURE_KEY = 'movies';
+export const selectMovies = createFeatureSelector<MovieState, MovieState>(
+  MOVIES_FEATURE_KEY
+);
+```
+
+And in the component:
+
+```js
+movies$: Observable<MovieState> = this.store.select(selectMovies);
+```
+
+But now there is a fearsome runtime error:
+
+```js
+Time: 4824ms
+: Compiled successfully.
+    ERROR in src/app/movies/movies-page/movies-page.component.html:1:5 - error TS2322: Type 'MovieState | null' is not assignable to type 'any[] | Iterable<any> | (Iterable<any> & any[]) | (any[] & Iterable<any>) | null | undefined'.
+      Type 'MovieState' is not assignable to type 'any[] | Iterable<any> | (Iterable<any> & any[]) | (any[] & Iterable<any>) | null | undefined'.
+        Type 'MovieState' is not assignable to type 'any[] & Iterable<any>'.
+          Type 'MovieState' is missing the following properties from type 'any[]': length, pop, push, concat, and 26 more.
+    1 <li *ngFor="let movie of movies$ | async">
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/app/movies/movies-page/movies-page.component.ts:10:16
+        10   templateUrl: './movies-page.component.html',
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+This compiles and runs, but the result is the same blank screen but a full store in the dev tools:
+
+```js
+movies$: Observable<MovieState> = this.store.select(selectMovies);
+```
+
+I take it back, it doesn't run.  We get the same error.  I think the constructor store type needs to match what the observable is pulling out of the store.  Here is the shown movies observable and constructor:
+
+```js
+movies$: Observable<Movie[]> = this.store.select(state => state.movies);
+constructor(private store: Store<{ movies: Movie[] }>) {}
+```
+
+When we try to use the selectMovies selector, there is a TS error on the movies$ observable:
+
+```txt
+Type 'Observable<MovieState>' is not assignable to type 'Observable<Movie[]>'.
+  Type 'MovieState' is missing the following properties from type 'Movie[]': length, pop, push, concat, and 26 more.ts(2322)
+```
+
+So maybe the MovieState in the reducer is the problem?  Or maybe we need a feature selector after all.
+
+Using selectFeatureMovies then moves the TS error to that which says:
+
+```txt
+No overload matches this call.
+  Overload 1 of 9, '(mapFn: (state: { movies: Movie[]; }) => Movie[]): Observable<Movie[]>', gave the following error.
+    Argument of type 'MemoizedSelector<AppState, Movie[], DefaultProjectorFn<Movie[]>>' is not assignable to parameter of type '(state: { movies: Movie[]; }) => Movie[]'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Property 'feature' is missing in type '{ movies: Movie[]; }' but required in type 'AppState'.
+...
+```
+
+I've seen that error before, as my day job involves NgRx.  I can be fixed by adding both states to the constructor.
+
+So this compiles and runs, but again, blank screen despite the store showing the movies array in the dev tools.
+
+```js
+movies$: Observable<Movie[]> = this.store.select(selectFeatureMovies);
+constructor(private store: Store<AppState & MovieState>) {}
+```
+
+Actually, it's staying 'applicationState', not 'state'.  That name is set in the app.module.  Change it to state and the name changes, but still the blank screen.
+
+```js
+StoreModule.forRoot({ state: movieReducer }),
+```
+
+Another point that needs explaining is why the need for a 'payload'.  In the action, we have this:
+
+```js
+export const loadMoviesSuccess = createAction(
+  '[Movies API] Movies Loaded Success',
+  props<{ payload: Movie[] }>()
+);
+```
+
+And a reducer that looks like this:
+
+```js
+on(loadMoviesSuccess, (state, action) => ({
+  ...state,
+  movies: action.payload,
+}))
+```
+
+And in the effect we see:
+
+```js
+this.moviesService.getAll().pipe(
+  map((movies) =>
+    loadMoviesSuccess({ payload: movies })
+  ),
+  catchError(() => of({ type: '[Movies API] Movies Loaded Error' }))
+)
+```
+
+If we replace payload with movies, there is no difference as far as I can see.  So what do the docs say about this?
+
+In the effects docs, it is shown but not explained.
+
+An how about props?  If you use React, you are more familiar which the concept of props.  In Angular they are used with @Input annotations.
+
+In the selector docs, we see this:
+
+*To select a piece of state based on data that isn't available in the store you can pass props to the selector function. These props gets passed through every selector and the projector function. To do so we must specify these props when we use the selector inside our component.*
+
+In the action, we have props and a payload.  I'm still not sure why we need either of them.  Why do all this boilerplate setup and the try to find something that "isn't available in the store" as it says above?
 
 ## Original Readme
 

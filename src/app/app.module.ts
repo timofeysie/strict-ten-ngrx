@@ -8,7 +8,7 @@ import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './reducers';
 import { movieReducer } from './movies/store/movie.reducer';
 import { MoviesModule } from './movies/movies.module';
-import { State } from './state/app.state';
+import { AppState } from './state/app.state';
 
 @NgModule({
   declarations: [AppComponent],

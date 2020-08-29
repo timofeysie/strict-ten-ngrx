@@ -1,5 +1,5 @@
 import { MovieState } from '../movies/store/movie.reducer';
 
-export interface State {
+export interface AppState {
   movies: MovieState;
 }
