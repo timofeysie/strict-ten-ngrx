@@ -3,13 +3,14 @@ import { loadMovies, loadMoviesSuccess } from './movie.actions';
 import { Movie } from '../movies-page/data/movie';
 
 export const initialState: MovieState = {
-  movies: []
+  movies: [],
 };
 
 export interface MovieState {
   movies: Movie[];
 }
 
+// tslint:disable-next-line: variable-name
 const _movieReducer = createReducer<MovieState>(
   initialState,
   on(
@@ -19,10 +20,12 @@ const _movieReducer = createReducer<MovieState>(
       movies: state.movies,
     })
   ),
-  on(loadMoviesSuccess, state => ({ ...state, payload: state.movies })
-  )
+  on(loadMoviesSuccess, (state, action) => ({
+    ...state,
+    movies: action.payload,
+  }))
 );
-// state => ({ ...state, away: state.away + 1 })),
-export function movieReducer(state, action) {
-         return _movieReducer(state, action);
-       }
+// tslint:disable-next-line: typedef no-any
+export function movieReducer(state: any, action: any) {
+  return _movieReducer(state, action);
+}

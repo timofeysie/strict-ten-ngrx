@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { map, mergeMap, catchError } from 'rxjs/operators';
 import { MoviesService } from '../movies.service';
+import { loadMoviesSuccess } from './movie.actions';
 
 @Injectable()
 export class MovieEffects {
@@ -11,10 +12,9 @@ export class MovieEffects {
       ofType('[Movies Page] Load Movies'),
       mergeMap(() =>
         this.moviesService.getAll().pipe(
-          map((movies) => ({
-            type: '[Movies API] Movies Loaded Success',
-            payload: movies,
-          })),
+          map((movies) =>
+            loadMoviesSuccess({ payload: movies })
+          ),
           catchError(() => of({ type: '[Movies API] Movies Loaded Error' }))
         )
       )

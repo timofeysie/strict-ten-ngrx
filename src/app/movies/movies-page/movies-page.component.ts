@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { MoviesService } from '../movies.service';
+import { Observable } from 'rxjs';
 import { Movie } from './data/movie';
-import { Store } from '@ngrx/store'; 
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'app-movies-page',
@@ -9,11 +9,8 @@ import { Store } from '@ngrx/store';
   styleUrls: ['./movies-page.component.scss'],
 })
 export class MoviesPageComponent implements OnInit {
-  movies: Movie[] = [];
-  constructor(
-    private movieService: MoviesService,
-    private store: Store<{ movies: Movie [] }>
-  ) {}
+  movies$: Observable<Movie[]> = this.store.select((state) => state.movies);
+  constructor(private store: Store<{ movies: Movie[] }>) {}
 
   ngOnInit(): void {
     // this.movieService.getAll().subscribe((movies) => (this.movies = movies));
