@@ -5,10 +5,10 @@ import { environment } from '../environments/environment'; // Angular CLI enviro
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { StoreModule } from '@ngrx/store';
-import { reducers, metaReducers } from './reducers';
+import { EffectsModule } from '@ngrx/effects';
 import { movieReducer } from './movies/store/movie.reducer';
 import { MoviesModule } from './movies/movies.module';
-import { AppState } from './state/app.state';
+import { MovieEffects } from './movies/store/movie.effects';
 
 @NgModule({
   declarations: [AppComponent],
@@ -17,13 +17,10 @@ import { AppState } from './state/app.state';
     AppRoutingModule,
     MoviesModule,
     StoreModule.forRoot({ state: movieReducer }),
+    EffectsModule.forRoot([MovieEffects]),
     StoreDevtoolsModule.instrument({
       maxAge: 25, // Retains last 25 states
       logOnly: environment.production, // Restrict extension to log-only mode
-    }),
-    StoreDevtoolsModule.instrument({
-      maxAge: 25,
-      logOnly: environment.production,
     }),
   ],
   providers: [],

@@ -221,6 +221,8 @@ Actually, it's staying 'applicationState', not 'state'.  That name is set in the
 StoreModule.forRoot({ state: movieReducer }),
 ```
 
+### Props and the payload
+
 Another point that needs explaining is why the need for a 'payload'.  In the action, we have this:
 
 ```js
@@ -261,6 +263,14 @@ In the selector docs, we see this:
 *To select a piece of state based on data that isn't available in the store you can pass props to the selector function. These props gets passed through every selector and the projector function. To do so we must specify these props when we use the selector inside our component.*
 
 In the action, we have props and a payload.  I'm still not sure why we need either of them.  Why do all this boilerplate setup and the try to find something that "isn't available in the store" as it says above?
+
+The official [docs for actions](https://ngrx.io/guide/store/actions) say: *The props method is used to define any additional metadata needed for the handling of the action. Action creators provide a consistent, type-safe way to construct an action that is being dispatched.*
+
+Given that definition, it is not clear to me why we would need props here.  What we want is the response to the API call.  We don't need meta data to make the call in this case.  If it was something like "Load Movies by ID", then yes, we would want the ID in the props.  The payload is what I understand to be a semantic way of saying the result of the action/effect.
+
+One article puts it like this: Actions *have an optional 'payload' property (naming is up to you but the standard is to name it 'payload') for sending in data to the effect/reducer*
+
+So yeah, that makes sense when sometimes I have seen response instead of payload.  It's just a JSON property name I guess.
 
 ## Original Readme
 

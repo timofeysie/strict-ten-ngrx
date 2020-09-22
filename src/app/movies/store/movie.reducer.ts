@@ -16,13 +16,12 @@ const _movieReducer = createReducer<MovieState>(
   on(
     loadMovies,
     (state): MovieState => ({
-      ...state,
-      movies: state.movies,
+      ...state
     })
   ),
   on(loadMoviesSuccess, (state, action) => ({
     ...state,
-    movies: action.payload,
+    data: action.payload,
   }))
 );
 // tslint:disable-next-line: typedef no-any
