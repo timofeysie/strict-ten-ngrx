@@ -346,6 +346,41 @@ I have a feeling this is due to trying to use an app state and a movie state.  T
         'movies' is declared here.
 ```
 
+After a week, that error is gone.  But it's the only hint there is right now to fix the blank screen and get the movies array async pipe to work.
+
+Line 15 in movies-page.component.ts is:
+
+```js
+movies$: Observable<Movie[]> = this.store.select(selectFeatureMovies);
+```
+
+But actually there is an error in the console log:
+
+```txt
+core.js:4196 ERROR TypeError: Cannot read property 'movies' of undefined
+    at movie.selectors.ts:15
+```
+
+That's a good clue.  The state is undefined.  The selector was from a different source
+
+The example code came from the [component store page](https://ngrx.io/guide/component-store/read) shows this:
+
+```js
+movies$ = this.moviesStore.movies$;
+```
+
+Installing and trying out the component store results in the same situation.  Blank screen but the movies array can be seen in the dev tools.  At least there is another place where the movie example is shown.  I think at this point going over the [guide to Ngrx effects](https://ngrx.io/guide/effects) would be a good idea.  There, the movies are gotten like this:
+
+```js
+private store: Store<{ movies: Movie[] }>
+...
+this.store.dispatch({ type: '[Movies Page] Load Movies' });
+```
+
+But using this also shows a blank screen.  I'm at the end of my patience with this now.  The next step is to just start again with a blank slate.  I posted [this question](https://stackoverflow.com/questions/64087123/let-movie-of-movies-async-not-working) on StackOverflow to see if anyone has the answer.
+
+Probably I should create a StackBlitz and edit the question with that.  A repo like this is less helpful to the casual viewer who is reading the question than a working live example.
+
 ## Original Readme
 
 ### Development server
