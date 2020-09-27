@@ -14,7 +14,6 @@ import { movieReducer } from './store/movie.reducer';
     HttpClientModule,
     EffectsModule.forFeature([MovieEffects]),
     StoreModule.forFeature('movies', movieReducer),
-    // EffectsModule.forRoot([MovieEffects]),
   ],
   exports: [MoviesPageComponent],
 })

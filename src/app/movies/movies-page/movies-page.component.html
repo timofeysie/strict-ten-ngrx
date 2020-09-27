@@ -1,3 +1,4 @@
-  <li *ngFor="let movie of movies$ | async | json">
-    {{ movie }}
-  </li>
+<li *ngFor="let movie of movies$ | async">
+  {{ movie.name }}
+</li>
+{{ movies$ | async | json }}

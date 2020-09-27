@@ -490,6 +490,20 @@ That situation is described in [another StackOverflow answer](https://stackoverf
 
 Owen does however provide his [own StackBlitz](https://stackblitz.com/edit/angular-ivy-rhquyi) answer.
 
+Replacing all the code in this repo with that answer code finally showed the error.  The component constructor looked like this:
+
+```js
+constructor(private store: Store<{ payload: Movie[] }>) {}
+```
+
+The StackBlitz shows this:
+
+```js
+constructor(private store: Store<{ movies: Movie[] }>) {}
+```
+
+Owen now has 724 reputation points.  I only have 177 and it shows.
+
 ## Original Readme
 
 ### Development server
