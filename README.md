@@ -4,6 +4,20 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 The strict flag was used to scaffold the app.
 
+## Workflow
+
+```txt
+ng serve // `http://localhost:4200/`
+ng generate component component-name
+ng build // artifacts will be stored in the `dist/` directory
+ng test // to execute the unit tests via [Karma](https://karma-runner.github.io).
+ng e2e // run the end-to-end tests via [Protractor](http://www.protractortest.org/)
+```
+
+## About this project
+
+The app was created as an Angular 10 project using the newly introduced strict flag with the following Angular CLI command:
+
 ```js
 ng new my-strict-ten --strict
 ```
@@ -271,6 +285,66 @@ Given that definition, it is not clear to me why we would need props here.  What
 One article puts it like this: Actions *have an optional 'payload' property (naming is up to you but the standard is to name it 'payload') for sending in data to the effect/reducer*
 
 So yeah, that makes sense when sometimes I have seen response instead of payload.  It's just a JSON property name I guess.
+
+### Getting back to work
+
+After a while away from this project, it's hard to jump back into the work in progress.  NgRx and Redux in general doesn't make it easy to just see some code and get to work.  At least not for me.
+
+So coming back to this after a brief session a few weeks ago trying to understand the naming of the props and payload in the actions, the current error when running the app is:
+
+```txt
+core.js:4196 ERROR TypeError: Cannot read property 'movies' of undefined
+    at movie.selectors.ts:15
+```
+
+SO says: *set a default case condtion* and has some code for the reducer.  You think StackOverflow would spell check it's submissions.  But no.  Lucky I have that plugin for VSCode so I can see that condition is misspelt there.
+
+Anyhow, in the code it shows:
+
+```js
+default : {
+  return state;
+}
+```
+
+But the code is old.  It shows the case switch where these days they use the on format.  The docs don't show a default block anymore.
+
+If we change the movie.selector line with the error from this:
+
+```js
+(state: MovieState) => state.movies
+```
+
+to this:
+
+```js
+(movies: MovieState) => movies
+```
+
+Then the app runs.  We still get a blank screen, but the movies array is in the dev tools, which is what it was like last time.
+
+So why the blank screen?  It's starting to come back now.  The pipe is working, but after the page is rendered.  I don't know, it's an observable that's not that observant.
+
+I have a feeling this is due to trying to use an app state and a movie state.  The goal was to have the movies state and the counter state working together and creating effects that combine both of them for some more advanced learning.  The current error is here:
+
+```bash
+: Compiled successfully.
+    ERROR in src/app/movies/movies-page/movies-page.component.ts:15:52 - error TS2769: No overload matches this call.
+      Overload 1 of 9, '(mapFn: (state: MovieState) => Movie[]): Observable<Movie[]>', gave the following error.
+        Argument of type 'MemoizedSelector<AppState, Movie[], DefaultProjectorFn<Movie[]>>' is not assignable to parameter of type '(state: MovieState) => Movie[]'.
+          Types of parameters 'state' and 'state' are incompatible.
+            Type 'MovieState' is not assignable to type 'AppState'.
+              Types of property 'movies' are incompatible.
+                Property 'movies' is missing in type 'Movie[]' but required in type 'MovieState'.
+      Overload 2 of 9, '(key: "movies"): Observable<Movie[]>', gave the following error.
+        Argument of type 'MemoizedSelector<AppState, Movie[], DefaultProjectorFn<Movie[]>>' is not assignable to parameter of type '"movies"'.
+    15   movies$: Observable<Movie[]> = this.store.select(selectFeatureMovies);
+                                                          ~~~~~~~~~~~~~~~~~~~
+      src/app/movies/store/movie.reducer.ts:10:3
+        10   movies: Movie[];
+             ~~~~~~
+        'movies' is declared here.
+```
 
 ## Original Readme
 
