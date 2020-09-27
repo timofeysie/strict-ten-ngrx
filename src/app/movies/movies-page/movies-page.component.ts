@@ -12,9 +12,10 @@ import { Store } from '@ngrx/store';
   styleUrls: ['./movies-page.component.scss'],
 })
 export class MoviesPageComponent implements OnInit {
-  movies$: Observable<Movie[]> = this.store.select((state) => state.movies);
+  // movies$: Observable<Movie[]> = this.store.select((state) => state.movies);
+  movies$: Observable<Movie[]> = this.store.select((state) => state.payload);
 
-  constructor(private store: Store<{ movies: Movie[] }>) {}
+  constructor(private store: Store<{ payload: Movie[] }>) {}
 
   ngOnInit(): void {
     // this.movieService.getAll().subscribe((movies) => (this.movies = movies));

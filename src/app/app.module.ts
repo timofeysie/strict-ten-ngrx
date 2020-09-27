@@ -16,7 +16,9 @@ import { MovieEffects } from './movies/store/movie.effects';
     BrowserModule,
     AppRoutingModule,
     MoviesModule,
-    StoreModule.forRoot({ state: movieReducer }),
+    StoreModule.forRoot({}),
+    EffectsModule.forRoot([]),
+    // StoreModule.forRoot({ state: movieReducer }),
     // EffectsModule.forRoot([MovieEffects]),
     StoreDevtoolsModule.instrument({
       maxAge: 25, // Retains last 25 states

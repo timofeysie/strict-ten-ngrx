@@ -12,9 +12,7 @@ export class MovieEffects {
       ofType('[Movies Page] Load Movies'),
       mergeMap(() =>
         this.moviesService.getAll().pipe(
-          map((movies) =>
-            loadMoviesSuccess({ payload: movies })
-          ),
+          map((movies) => loadMoviesSuccess({ payload: movies })),
           catchError(() => of({ type: '[Movies API] Movies Loaded Error' }))
         )
       )

@@ -381,6 +381,115 @@ But using this also shows a blank screen.  I'm at the end of my patience with th
 
 Probably I should create a StackBlitz and edit the question with that.  A repo like this is less helpful to the casual viewer who is reading the question than a working live example.
 
+An answer came in overnight from Owen Kelvin with reputation 699.
+
+He shows first defining a store in the app.module.ts.
+
+This was how it was being done.
+
+```js
+StoreModule.forRoot({ state: movieReducer }),
+EffectsModule.forRoot([MovieEffects]),
+```
+
+Owen showed this code:
+
+```js
+StoreModule.forRoot({}),
+EffectsModule.forRoot([]),
+```
+
+Then, in the movies.module.ts, replace this:
+
+```js
+EffectsModule.forRoot([MovieEffects]),
+```
+
+With this:
+
+```js
+EffectsModule.forFeature([MovieEffects]),
+StoreModule.forFeature('movies', movieReducer),
+```  
+
+Then in src\app\movies\store\movie.reducer.ts, replace this:
+
+```js
+const _movieReducer = createReducer<MovieState>(
+```
+
+With this:
+
+```js
+const _movieReducer = createReducer<Movie[]>(
+```
+
+The initialState had the following error:
+
+```txt
+Argument of type 'MovieState' is not assignable to parameter of type 'Movie[]'.
+  Type 'MovieState' is missing the following properties from type 'Movie[]': length, pop, push, concat, and 26 more.ts(2345)
+```
+
+Had to change the type from:
+
+```js
+export const initialState: MovieState = {
+```
+
+To any:
+
+```js
+export const initialState: any = {
+  movies: [],
+};
+```
+
+We had this in the reducer:
+
+```js
+const _movieReducer = createReducer<MovieState>(
+  initialState,
+  on(loadMovies, (state): MovieState => ({ ...state })),
+  on(loadMoviesSuccess, (state, action) => ({ ...state, movies: action.payload }))
+```
+
+Own showed this:
+
+```js
+const _movieReducer = createReducer<Movie[]>(
+  initialState,
+  on(loadMovies, (state): Movie[] => [...state]),
+  on(loadMoviesSuccess, (state, action) => [...state, ...action.payload])
+```
+
+The result after these changes is the same blank screen, but there is a message in the Redux dev tools: *Interrupted by an error up the chain*.
+
+Apparently that means the reducer threw an error.  There is a console log error:
+
+```txt
+ERROR TypeError: object is not iterable (cannot read property Symbol(Symbol.iterator))
+    at http://localhost:4200/main.js:463:228
+```
+
+Looking at the component, the docs show this:
+
+```js
+movies$: Observable<Movie[]> = this.store.select(state => state.movies);
+```
+
+But that has a TS error:
+
+```txt
+Property 'movies' does not exist on type '{ payload: Movie[]; }'.
+```
+
+Trying state.payload which is what was there before works, but then the same error shows up in the console: *object is not iterable*.
+
+That situation is described in [another StackOverflow answer](https://stackoverflow.com/questions/59337830/angular-ngrx-getting-error-when-dispatching-to-state).  Using the original reducer code shown above removes the error but the list is still not displayed despite it showing up in the dev tools.
+
+Owen does however provide his [own StackBlitz](https://stackblitz.com/edit/angular-ivy-rhquyi) answer.
+
 ## Original Readme
 
 ### Development server
